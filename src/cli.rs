@@ -4,6 +4,7 @@ use std::{
     str,
 };
 
+use colored::*;
 use log::debug;
 use regex::Regex;
 
@@ -17,13 +18,13 @@ pub fn run() {
     let outputs = get_status_from_paths(paths);
     let (clean, dirty) = parse_outputs(outputs);
 
-    println!("The following repos are clean:");
+    println!("{}", "The following repos are clean:".green());
     for output in clean {
         println!("\t{}", output.path);
     }
     println!();
 
-    println!("The following repos are dirty:");
+    println!("{}", "The following repos are dirty:".red());
     for output in dirty {
         println!("\t{}", output.path);
     }
