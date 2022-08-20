@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::process::{Command, Output};
 
 use crate::config;
 
@@ -11,16 +11,17 @@ pub fn run() {
     // debug!("Contents:\n{:?}", contents);
 
     let paths = config::generate_list_of_paths(contents);
-    println!("Paths: {:?}", paths);
+    // debug!("Paths: {:?}", paths);
+    let mut cmd = Command::new("git");
+    let cmd = cmd.arg("status");
+
+    let output = run_command(cmd, &paths[0]);
+    println!("Output: {:?}", output);
 }
 
-fn run_command(cmd: &str, dir: &str) {
-    let mut command = Command::new(cmd);
-    command.status().expect("Error while running command");
-    println!();
-
+fn run_command(cmd: &mut Command, dir: &str) -> Output {
     let file_path = config::parse_path_with_tilde(dir).unwrap();
 
-    command.current_dir(file_path);
-    command.status().expect("Error while running command");
+    cmd.current_dir(file_path);
+    cmd.output().expect("Error while running command")
 }
