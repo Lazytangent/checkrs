@@ -15,8 +15,11 @@ pub fn run() {
     let mut cmd = Command::new("git");
     let cmd = cmd.arg("status");
 
-    let output = run_command(cmd, &paths[0]);
-    print!("Output:\n{}", str::from_utf8(&output.stdout).unwrap());
+    for path in paths {
+        let output = run_command(cmd, &path);
+        print!("Output:\n{}", str::from_utf8(&output.stdout).unwrap());
+        println!("---------------------------");
+    }
 }
 
 fn run_command(cmd: &mut Command, dir: &str) -> Output {
