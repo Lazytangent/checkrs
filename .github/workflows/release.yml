@@ -1,0 +1,36 @@
+name: Release Artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Name of the Tag to Create a Release with
+        required: true
+        type: string
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build Artifact
+        run: cargo build --release
+      - name: Compress into tarball
+        run: tar -czvf release.tar.gz target/release/checkrs
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release.tar.gz
+          tag_name: ${{ inputs.tag_name }}
