@@ -1,3 +1,5 @@
+use checkrs::cli;
+
 fn main() {
-    println!("Hello, world!");
+    cli::run();
 }
