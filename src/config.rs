@@ -4,12 +4,14 @@ use std::{
     io::{self, Read},
 };
 
+use log::debug;
+
 pub static PATH_TO_CONFIG_DIR: &str = "~/.config/checkrs/";
 pub static CONFIG_FILE_NAME: &str = "config";
 
 pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     let path = String::from(path);
-    // debug!("Path starts as: {}", path);
+    debug!("Path starts as: {}", path);
 
     let home = match env::var("HOME") {
         Ok(path) => path,
@@ -17,7 +19,7 @@ pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     };
 
     let path = path.replace("~", &home);
-    // debug!("Path is now: {}", path);
+    debug!("Path is now: {}", path);
 
     Ok(path)
 }
@@ -38,5 +40,6 @@ pub fn generate_list_of_paths(contents: String) -> Vec<String> {
         paths_to_check.push(path);
     }
 
+    debug!("Paths: {:?}", paths_to_check);
     paths_to_check
 }
