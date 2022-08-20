@@ -1,6 +1,7 @@
-use std::env;
+use std::{env, fs::File, io::{self, Read}};
 
 pub static PATH_TO_CONFIG_DIR: &str = "~/.config/checkrs/";
+pub static CONFIG_FILE_NAME: &str = "config";
 
 pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     let path = String::from(path);
@@ -15,4 +16,12 @@ pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     println!("Path is now: {}", path);
 
     Ok(path)
+}
+
+pub fn read_config_file(path: &str) -> io::Result<String> {
+    let mut file = File::open(path)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    Ok(contents)
 }
