@@ -5,7 +5,7 @@ pub static CONFIG_FILE_NAME: &str = "config";
 
 pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     let path = String::from(path);
-    println!("Path starts as: {}", path);
+    // debug!("Path starts as: {}", path);
 
     let home = match env::var("HOME") {
         Ok(path) => path,
@@ -13,7 +13,7 @@ pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     };
 
     let path = path.replace("~", &home);
-    println!("Path is now: {}", path);
+    // debug!("Path is now: {}", path);
 
     Ok(path)
 }
@@ -24,4 +24,15 @@ pub fn read_config_file(path: &str) -> io::Result<String> {
     file.read_to_string(&mut contents)?;
 
     Ok(contents)
+}
+
+pub fn generate_list_of_paths(contents: String) -> Vec<String> {
+    let mut paths_to_check: Vec<String> = Vec::new();
+
+    for line in contents.lines() {
+        let path = parse_path_with_tilde(line).unwrap();
+        paths_to_check.push(path);
+    }
+
+    paths_to_check
 }

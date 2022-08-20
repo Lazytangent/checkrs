@@ -8,7 +8,10 @@ pub fn run() {
     let mut path = config::parse_path_with_tilde(config::PATH_TO_CONFIG_DIR).unwrap();
     path.push_str(config::CONFIG_FILE_NAME);
     let contents = config::read_config_file(&path).unwrap();
-    println!("Contents:\n{:?}", contents);
+    // debug!("Contents:\n{:?}", contents);
+
+    let paths = config::generate_list_of_paths(contents);
+    println!("Paths: {:?}", paths);
 }
 
 fn run_command(cmd: &str, dir: &str) {
