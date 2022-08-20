@@ -13,14 +13,7 @@ pub fn run() {
         get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME).unwrap();
     let paths = config::generate_list_of_paths(contents);
 
-    let mut cmd = Command::new("git");
-    let cmd = cmd.arg("status");
-
-    for path in paths {
-        let output = run_command(cmd, &path);
-        print!("Output:\n{}", str::from_utf8(&output.stdout).unwrap());
-        println!("---------------------------");
-    }
+    get_status_from_paths(paths);
 }
 
 fn run_command(cmd: &mut Command, dir: &str) -> Output {
@@ -36,4 +29,19 @@ fn get_config_file_contents(path: &str, filename: &str) -> io::Result<String> {
     let contents = config::read_config_file(&path).unwrap();
     debug!("Contents:\t{:?}", contents);
     Ok(contents)
+}
+
+fn get_status_from_paths(paths: Vec<String>) {
+    let mut cmd = Command::new("git");
+    let cmd = cmd.arg("status");
+
+    for path in paths {
+        let output = run_command(cmd, &path);
+        let stdout = str::from_utf8(&output.stdout).unwrap();
+        let stderr = str::from_utf8(&output.stderr).unwrap();
+
+        debug!("Output:\n{}", stdout);
+        debug!("Error:\n{}", stderr);
+        debug!("---------------------------");
+    }
 }
