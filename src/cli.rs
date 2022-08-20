@@ -1,4 +1,7 @@
-use std::{process::{Command, Output}, str};
+use std::{
+    process::{Command, Output},
+    str,
+};
 
 use log::debug;
 

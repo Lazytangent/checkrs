@@ -1,4 +1,8 @@
-use std::{env, fs::File, io::{self, Read}};
+use std::{
+    env,
+    fs::File,
+    io::{self, Read},
+};
 
 pub static PATH_TO_CONFIG_DIR: &str = "~/.config/checkrs/";
 pub static CONFIG_FILE_NAME: &str = "config";
