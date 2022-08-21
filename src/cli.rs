@@ -1,7 +1,7 @@
 use std::{
     io,
     process::{Command, Output},
-    str,
+    str, thread,
 };
 
 use colored::*;
@@ -45,6 +45,7 @@ fn get_config_file_contents(path: &str, filename: &str) -> io::Result<String> {
     Ok(contents)
 }
 
+#[derive(Debug)]
 struct Outputs {
     stdout: String,
     stderr: String,
@@ -52,12 +53,33 @@ struct Outputs {
 }
 
 fn get_status_from_paths(paths: Vec<String>) -> Vec<Outputs> {
-    let mut cmd = Command::new("git");
-    let cmd = cmd.arg("status");
-
     let mut outputs: Vec<Outputs> = Vec::new();
 
+    let handles = create_threads(paths);
+
+    for handle in handles {
+        let output = handle.join().unwrap();
+        debug!("{output:?}");
+        outputs.push(output);
+    }
+
+    outputs
+}
+
+fn create_threads(paths: Vec<String>) -> Vec<thread::JoinHandle<Outputs>> {
+    let mut handles = vec![];
+
     for path in paths {
+        handles.push(threaded(path));
+    }
+
+    handles
+}
+
+fn threaded(path: String) -> thread::JoinHandle<Outputs> {
+    thread::spawn(|| {
+        let mut cmd = Command::new("git");
+        let cmd = cmd.arg("status");
         let output = run_command(cmd, &path);
         let stdout = str::from_utf8(&output.stdout).unwrap().to_string();
         let stderr = str::from_utf8(&output.stderr).unwrap().to_string();
@@ -65,15 +87,12 @@ fn get_status_from_paths(paths: Vec<String>) -> Vec<Outputs> {
         debug!("Error:\n{}", stderr);
         debug!("---------------------------");
 
-        let output = Outputs {
+        Outputs {
             stdout,
             stderr,
             path,
-        };
-        outputs.push(output);
-    }
-
-    outputs
+        }
+    })
 }
 
 static PATTERN: &str = "nothing to commit, working tree clean";
