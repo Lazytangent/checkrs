@@ -1,12 +1,14 @@
 use std::{
     io,
     process::{Command, Output},
-    str, thread,
+    str,
+    sync::{Arc, Mutex},
 };
 
 use colored::*;
 use log::debug;
 use regex::Regex;
+use threadpool::ThreadPool;
 
 use crate::config;
 
@@ -45,7 +47,7 @@ fn get_config_file_contents(path: &str, filename: &str) -> io::Result<String> {
     Ok(contents)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Outputs {
     stdout: String,
     stderr: String,
@@ -53,46 +55,45 @@ struct Outputs {
 }
 
 fn get_status_from_paths(paths: Vec<String>) -> Vec<Outputs> {
-    let mut outputs: Vec<Outputs> = Vec::new();
+    let mutex = create_threads(paths);
 
-    let handles = create_threads(paths);
-
-    for handle in handles {
-        let output = handle.join().unwrap();
-        debug!("{output:?}");
-        outputs.push(output);
-    }
+    let outputs = mutex.lock().unwrap().to_vec();
 
     outputs
 }
 
-fn create_threads(paths: Vec<String>) -> Vec<thread::JoinHandle<Outputs>> {
-    let mut handles = vec![];
+const NUM_OF_WORKERS: usize = 4;
+
+fn create_threads(paths: Vec<String>) -> Arc<Mutex<Vec<Outputs>>> {
+    let pool = ThreadPool::new(NUM_OF_WORKERS);
+    let mutex = Arc::new(Mutex::new(vec![]));
 
     for path in paths {
-        handles.push(threaded(path));
+        let mutex = mutex.clone();
+        pool.execute(move || git_status(path, mutex));
     }
 
-    handles
+    pool.join();
+
+    mutex
 }
 
-fn threaded(path: String) -> thread::JoinHandle<Outputs> {
-    thread::spawn(|| {
-        let mut cmd = Command::new("git");
-        let cmd = cmd.arg("status");
-        let output = run_command(cmd, &path);
-        let stdout = str::from_utf8(&output.stdout).unwrap().to_string();
-        let stderr = str::from_utf8(&output.stderr).unwrap().to_string();
-        debug!("Output:\n{}", stdout);
-        debug!("Error:\n{}", stderr);
-        debug!("---------------------------");
+fn git_status(path: String, mutex: Arc<Mutex<Vec<Outputs>>>) {
+    let mut cmd = Command::new("git");
+    let cmd = cmd.arg("status");
+    let output = run_command(cmd, &path);
+    let stdout = str::from_utf8(&output.stdout).unwrap().to_string();
+    let stderr = str::from_utf8(&output.stderr).unwrap().to_string();
+    debug!("Output:\n{}", stdout);
+    debug!("Error:\n{}", stderr);
+    debug!("---------------------------");
 
-        Outputs {
-            stdout,
-            stderr,
-            path,
-        }
-    })
+    let outputs = Outputs {
+        stdout,
+        stderr,
+        path,
+    };
+    mutex.lock().unwrap().push(outputs);
 }
 
 static PATTERN: &str = "nothing to commit, working tree clean";
