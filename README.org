@@ -1,0 +1,36 @@
+#+title: Checkrs
+
+A utility to quickly check the =git status='s of a number of projects.
+
+** Installation
+For a quick installation process, use =cargo install --git=.
+
+#+BEGIN_SRC bash
+cargo install --git ssh://git@github.com/Lazytangent/checkrs.git
+#+END_SRC
+
+** Build from Source
+Clone the repository.
+
+From the root of the repository,
+- Run =cargo build= to build the binary in debug mode,
+- Run =cargo run= to quickly run the program
+- Run =cargo install --path .= to install the program from the local repository
+** Configuration
+Set your configuration file in =~/.config/checkrs/config=. The expected filetype
+of the file is just text or txt.
+
+An example file could look like this:
+#+BEGIN_SRC text
+~/.config
+~/.config/nvim
+~/.vim
+~/dotfiles
+~/.config/doom
+#+END_SRC
+
+** Roadmap
+*** Support for comments in the config file
+*** Generating the directory and config file for a first time user
+*** Prompting the user to add the first entry to the config file
+*** Support for other environment variables to be used in the path
