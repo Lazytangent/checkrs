@@ -25,7 +25,18 @@ pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
 }
 
 pub fn read_config_file(path: &str) -> io::Result<String> {
-    let mut file = File::open(path)?;
+    let mut file = match File::open(path) {
+        Ok(file) => file,
+        Err(e) => {
+            // TODO: Should there be logic to only create a new when certain kind(s) of errors
+            // appear?
+            eprintln!("File not found: {}", e);
+            debug!("Creating a new file");
+
+            // TODO: Prompt user for permission to create a new config file.
+            File::create(path).expect("File should be creatable")
+        }
+    };
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
