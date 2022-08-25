@@ -1,4 +1,5 @@
 use std::{
+    env,
     io,
     process::{Command, Output},
     str,
@@ -12,23 +13,32 @@ use threadpool::ThreadPool;
 
 use crate::config;
 
+pub mod subcommands;
+
 pub fn run() {
-    let contents =
-        get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME).unwrap();
-    let paths = config::generate_list_of_paths(contents);
+    let arg = env::args().nth(1);
 
-    let outputs = get_status_from_paths(paths);
-    let (clean, dirty) = parse_outputs(outputs);
+    match arg {
+        Some(val) => subcommands::run_subcommand(val),
+        None => {
+            let contents =
+                get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME).unwrap();
+            let paths = config::generate_list_of_paths(contents);
 
-    println!("{}", "The following repos are clean:".green());
-    for output in clean {
-        println!("\t{}", output.path);
-    }
-    println!();
+            let outputs = get_status_from_paths(paths);
+            let (clean, dirty) = parse_outputs(outputs);
 
-    println!("{}", "The following repos are dirty:".red());
-    for output in dirty {
-        println!("\t{}", output.path);
+            println!("{}", "The following repos are clean:".green());
+            for output in clean {
+                println!("\t{}", output.path);
+            }
+            println!();
+
+            println!("{}", "The following repos are dirty:".red());
+            for output in dirty {
+                println!("\t{}", output.path);
+            }
+        }
     }
 }
 
