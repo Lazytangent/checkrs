@@ -1,6 +1,5 @@
 use std::{
-    env,
-    io,
+    env, io,
     process::{Command, Output},
     str,
     sync::{Arc, Mutex},
@@ -22,7 +21,8 @@ pub fn run() {
         Some(val) => subcommands::run_subcommand(val),
         None => {
             let contents =
-                get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME).unwrap();
+                get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME)
+                    .unwrap();
             let paths = config::generate_list_of_paths(contents);
 
             let outputs = get_status_from_paths(paths);

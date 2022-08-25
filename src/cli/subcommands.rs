@@ -8,7 +8,13 @@ pub fn run_subcommand(subcommand: String) {
 }
 
 fn handle_status() {
-    let path = env::args().nth(2).expect("status subcommand requires a path");
+    let path = env::args()
+        .nth(2)
+        .expect("status subcommand requires a path");
     println!("In {path}\n");
-    Command::new("git").arg("status").current_dir(path).status().expect("git status should be run within a repository");
+    Command::new("git")
+        .arg("status")
+        .current_dir(path)
+        .status()
+        .expect("git status should be run within a repository");
 }
