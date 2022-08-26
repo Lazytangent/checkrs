@@ -1,16 +1,14 @@
-use std::{env, process::Command};
+use std::process::Command;
 
-pub fn run_subcommand(subcommand: String) {
-    match subcommand.as_str() {
-        "status" => handle_status(),
-        _ => unimplemented!(),
+use crate::cli::schemas;
+
+pub fn run_subcommand(command: schemas::Command) {
+    match command {
+        schemas::Command::Status { path } => handle_status(&path),
     }
 }
 
-fn handle_status() {
-    let path = env::args()
-        .nth(2)
-        .expect("status subcommand requires a path");
+fn handle_status(path: &str) {
     println!("In {path}\n");
     Command::new("git")
         .arg("status")

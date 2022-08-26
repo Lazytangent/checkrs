@@ -1,10 +1,11 @@
 use std::{
-    env, io,
+    io,
     process::{Command, Output},
     str,
     sync::{Arc, Mutex},
 };
 
+use clap::Parser;
 use colored::*;
 use log::debug;
 use regex::Regex;
@@ -12,33 +13,35 @@ use threadpool::ThreadPool;
 
 use crate::config;
 
+pub mod schemas;
 pub mod subcommands;
 
 pub fn run() {
-    let arg = env::args().nth(1);
+    let cli = schemas::Cli::parse();
 
-    match arg {
-        Some(val) => subcommands::run_subcommand(val),
-        None => {
-            let contents =
-                get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME)
-                    .unwrap();
-            let paths = config::generate_list_of_paths(contents);
+    match cli.command {
+        Some(cmd) => subcommands::run_subcommand(cmd),
+        None => process_without_subcommand(),
+    }
+}
 
-            let outputs = get_status_from_paths(paths);
-            let (clean, dirty) = parse_outputs(outputs);
+fn process_without_subcommand() {
+    let contents =
+        get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME).unwrap();
+    let paths = config::generate_list_of_paths(contents);
 
-            println!("{}", "The following repos are clean:".green());
-            for output in clean {
-                println!("\t{}", output.path);
-            }
-            println!();
+    let outputs = get_status_from_paths(paths);
+    let (clean, dirty) = parse_outputs(outputs);
 
-            println!("{}", "The following repos are dirty:".red());
-            for output in dirty {
-                println!("\t{}", output.path);
-            }
-        }
+    println!("{}", "The following repos are clean:".green());
+    for output in clean {
+        println!("\t{}", output.path);
+    }
+    println!();
+
+    println!("{}", "The following repos are dirty:".red());
+    for output in dirty {
+        println!("\t{}", output.path);
     }
 }
 
