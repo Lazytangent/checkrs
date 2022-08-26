@@ -15,7 +15,7 @@ pub struct Outputs {
     pub path: String,
 }
 
-pub fn run_command(cmd: &mut Command, dir: &str) -> Output {
+fn run_command(cmd: &mut Command, dir: &str) -> Output {
     let file_path = config::parse_path_with_tilde(dir).unwrap();
 
     cmd.current_dir(file_path);
