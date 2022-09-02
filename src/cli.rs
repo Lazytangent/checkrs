@@ -1,5 +1,5 @@
 use std::{
-    io, str,
+    io, process, str,
     sync::{Arc, Mutex},
 };
 
@@ -24,8 +24,14 @@ pub fn run() {
 }
 
 fn process_without_subcommand() {
-    let contents =
-        get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME).unwrap();
+    let contents = get_config_file_contents(config::PATH_TO_CONFIG_DIR, config::CONFIG_FILE_NAME);
+    let contents = match contents {
+        Ok(file) => file,
+        Err(e) => {
+            eprintln!("Error while parsing config file: {e:?}");
+            process::exit(1);
+        }
+    };
     let paths = config::generate_list_of_paths(contents);
 
     let outputs = get_status_from_paths(paths);

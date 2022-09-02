@@ -1,7 +1,9 @@
 use std::{
     env,
-    fs::File,
+    fs::{DirBuilder, File},
     io::{self, Read},
+    path::Path,
+    process,
 };
 
 use log::debug;
@@ -25,6 +27,16 @@ pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
 }
 
 pub fn read_config_file(path: &str) -> io::Result<String> {
+    if !check_config_dir() {
+        println!("Directory not found.");
+        println!("Attempting to create one.");
+
+        match DirBuilder::new().create(PATH_TO_CONFIG_DIR) {
+            Ok(_) => println!("Successfully created directory"),
+            Err(e) => return Err(e),
+        }
+    }
+
     let mut file = match File::open(path) {
         Ok(file) => file,
         Err(e) => {
@@ -34,7 +46,13 @@ pub fn read_config_file(path: &str) -> io::Result<String> {
             debug!("Creating a new file");
 
             // TODO: Prompt user for permission to create a new config file.
-            File::create(path).expect("File should be creatable")
+            match File::create(path) {
+                Ok(file) => {
+                    println!("Successfully created file");
+                    file
+                }
+                Err(e) => return Err(e),
+            }
         }
     };
     let mut contents = String::new();
@@ -47,10 +65,20 @@ pub fn generate_list_of_paths(contents: String) -> Vec<String> {
     let mut paths_to_check: Vec<String> = Vec::new();
 
     for line in contents.lines() {
-        let path = parse_path_with_tilde(line).unwrap();
+        let path = match parse_path_with_tilde(line) {
+            Ok(path) => path,
+            Err(e) => {
+                eprintln!("Error while parsing path: {e:?}");
+                process::exit(1);
+            }
+        };
         paths_to_check.push(path);
     }
 
     debug!("Paths: {:?}", paths_to_check);
     paths_to_check
+}
+
+fn check_config_dir() -> bool {
+    Path::new(PATH_TO_CONFIG_DIR).is_dir()
 }
