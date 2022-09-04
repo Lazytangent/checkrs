@@ -10,7 +10,9 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
+    /// Check the status of a given path
     Status {
+        /// Path of the local repository you want to check
         #[clap(value_parser)]
         path: String,
     },
