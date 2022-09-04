@@ -1,12 +1,13 @@
 use std::{
     env,
+    error::Error,
     fs::{DirBuilder, File},
-    io::{self, Read},
+    io::Read,
     path::Path,
     process,
 };
 
-use log::debug;
+use log::{debug, error};
 
 pub static PATH_TO_CONFIG_DIR: &str = "~/.config/checkrs/";
 pub static CONFIG_FILE_NAME: &str = "config";
@@ -26,14 +27,23 @@ pub fn parse_path_with_tilde(path: &str) -> Result<String, String> {
     Ok(path)
 }
 
-pub fn read_config_file(path: &str) -> io::Result<String> {
+pub fn read_config_file(path: &str) -> Result<String, Box<dyn Error>> {
     if !check_config_dir() {
         println!("Directory not found.");
         println!("Attempting to create one.");
+        // TODO: Remove extra call for same path
+        let path = match parse_path_with_tilde(PATH_TO_CONFIG_DIR) {
+            Ok(val) => val,
+            Err(e) => {
+                error!("Error while parsing path");
+                eprintln!("{e:#?}");
+                return Err(Box::<dyn Error>::from(e));
+            }
+        };
 
-        match DirBuilder::new().create(PATH_TO_CONFIG_DIR) {
+        match DirBuilder::new().create(path) {
             Ok(_) => println!("Successfully created directory"),
-            Err(e) => return Err(e),
+            Err(e) => return Err(Box::<dyn Error>::from(e)),
         }
     }
 
@@ -51,7 +61,7 @@ pub fn read_config_file(path: &str) -> io::Result<String> {
                     println!("Successfully created file");
                     file
                 }
-                Err(e) => return Err(e),
+                Err(e) => return Err(Box::<dyn Error>::from(e)),
             }
         }
     };
@@ -80,5 +90,7 @@ pub fn generate_list_of_paths(contents: String) -> Vec<String> {
 }
 
 fn check_config_dir() -> bool {
-    Path::new(PATH_TO_CONFIG_DIR).is_dir()
+    let path = parse_path_with_tilde(PATH_TO_CONFIG_DIR).unwrap();
+
+    Path::new(&path).is_dir()
 }
