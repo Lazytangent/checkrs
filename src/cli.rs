@@ -10,6 +10,6 @@ pub fn run() {
 
     match cli.command {
         Some(cmd) => subcommands::run_subcommand(cmd),
-        None => utils::process_without_subcommand(),
+        None => utils::process_without_subcommand(&cli),
     }
 }

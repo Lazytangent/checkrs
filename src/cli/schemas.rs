@@ -6,6 +6,9 @@ pub struct Cli {
     /// Command
     #[clap(subcommand)]
     pub command: Option<Command>,
+    /// Use toml?
+    #[clap(short, long, action)]
+    pub toml: bool,
 }
 
 #[derive(Subcommand, Debug)]
