@@ -1,0 +1,19 @@
+[[paths]]
+name = "XDG Config"
+path = "~/.config"
+
+[[paths]]
+name = "Neovim config"
+path = "~/.config/nvim"
+
+[[paths]]
+name = "Vim config"
+path = "~/.vim"
+
+[[paths]]
+name = "Dotfiles"
+path = "~/dotfiles"
+
+[[paths]]
+name = "Doom Emacs config"
+path = "~/.config/doom"
