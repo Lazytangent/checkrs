@@ -1,10 +1,10 @@
 use std::{
-    io, process,
+    env, io, process,
     sync::{Arc, Mutex},
 };
 
 use colored::Colorize;
-use log::debug;
+use log::{debug, error};
 use regex::Regex;
 use threadpool::ThreadPool;
 
@@ -40,6 +40,23 @@ pub fn process_without_subcommand(cli: &cli::schemas::Cli) {
     };
 }
 
+fn replace_home_with_tilde(path: &str) -> String {
+    let home_dir = match env::var("HOME") {
+        Ok(path) => path,
+        Err(e) => {
+            error!("Error while parsing env $HOME:");
+            eprintln!("{e:?}");
+            process::exit(1);
+        }
+    };
+
+    if path.starts_with(&home_dir) {
+        return path.replace(&home_dir, "~");
+    }
+
+    unreachable!();
+}
+
 fn handle_toml_file(file: config::schemas::ConfigFile) {
     let paths: Vec<String> = file.paths.iter().map(|p| p.path.clone()).collect();
 
@@ -48,13 +65,13 @@ fn handle_toml_file(file: config::schemas::ConfigFile) {
 
     println!("{}", "The following repos are clean:".green());
     for output in clean {
-        println!("\t{}", output.path);
+        println!("\t{}", replace_home_with_tilde(&output.path));
     }
     println!();
 
     println!("{}", "The following repos are dirty:".red());
     for output in dirty {
-        println!("\t{}", output.path);
+        println!("\t{}", replace_home_with_tilde(&output.path));
     }
 }
 
@@ -66,13 +83,13 @@ fn handle_plain_file(contents: String) {
 
     println!("{}", "The following repos are clean:".green());
     for output in clean {
-        println!("\t{}", output.path);
+        println!("\t{}", replace_home_with_tilde(&output.path));
     }
     println!();
 
     println!("{}", "The following repos are dirty:".red());
     for output in dirty {
-        println!("\t{}", output.path);
+        println!("\t{}", replace_home_with_tilde(&output.path));
     }
 }
 
