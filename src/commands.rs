@@ -19,7 +19,18 @@ fn run_command(cmd: &mut Command, dir: &str) -> Output {
     let file_path = config::parse_path_with_tilde(dir).unwrap();
 
     cmd.current_dir(file_path);
-    cmd.output().expect("Error while running command")
+    match cmd.output() {
+        Ok(res) => res,
+        Err(e) => {
+            eprintln!("Command: {:?} -- Args: {:?}", cmd.get_program(), cmd.get_args());
+            eprintln!("Directory: {dir}");
+            eprintln!("Error while running command:");
+            eprintln!("{e:?}");
+            eprintln!("{:-<80}", "");
+
+            panic!();
+        }
+    }
 }
 
 pub fn git_status(path: String, mutex: Arc<Mutex<Vec<Outputs>>>) {
